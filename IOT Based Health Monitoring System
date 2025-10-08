@@ -1,0 +1,35 @@
+DISCRIPTION: An IoT-based Health Monitoring System continuously measures a person’s temperature, heart rate, and oxygen level (SpO₂) using sensors connected to a NodeMCU (ESP8266).
+The data is sent via Wi-Fi to the Blynk App, allowing doctors or users to monitor health in real-time from anywhere.
+CODING : 
+#define BLYNK_AUTH_TOKEN "YourAuthToken"
+#include <ESP8266WiFi.h>
+#include <BlynkSimpleEsp8266.h>
+#include "MAX30100_PulseOximeter.h"
+
+char auth[] = BLYNK_AUTH_TOKEN;
+char ssid[] = "YourWiFi";
+char pass[] = "YourPassword";
+
+#define tempPin A0
+PulseOximeter pox;
+
+void setup() {
+  Serial.begin(115200);
+  Blynk.begin(auth, ssid, pass);
+  pox.begin();
+}
+
+void loop() {
+  Blynk.run();
+  pox.update();
+
+  float temp = analogRead(tempPin) * 0.322;  // LM35 calculation
+  float bpm = pox.getHeartRate();
+  float spo2 = pox.getSpO2();
+
+  Blynk.virtualWrite(V1, temp);
+  Blynk.virtualWrite(V2, bpm);
+  Blynk.virtualWrite(V3, spo2);
+
+  delay(1000);
+}
